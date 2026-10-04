@@ -70,7 +70,7 @@ Result Displayed on Web Page
 ### 1. Clone the repository
 
 ```bash
-git clone git@github.com:aryasinha0/ML_Project_Deploy.git
+git clone https://github.com/aryasinha0/ML_Project_Deploy.git
 ```
 
 ### 2. Create a virtual environment

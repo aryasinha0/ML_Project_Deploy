@@ -3,315 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Survivor Detection - Maritime Classification</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-        
-        .model-info {
-            background: #f8f9fa;
-            padding: 15px 30px;
-            border-bottom: 2px solid #e9ecef;
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        .model-info div {
-            text-align: center;
-        }
-        
-        .model-info strong {
-            color: #1e3c72;
-            font-size: 1.2em;
-        }
-        
-        .model-info span {
-            color: #6c757d;
-            font-size: 0.95em;
-        }
-        
-        .content {
-            padding: 40px 30px;
-        }
-        
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .form-group label {
-            font-weight: 600;
-            color: #495057;
-            margin-bottom: 8px;
-            font-size: 0.95em;
-        }
-        
-        .form-group input,
-        .form-group select {
-            padding: 12px 15px;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: border-color 0.3s;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .form-group small {
-            color: #6c757d;
-            margin-top: 5px;
-            font-size: 0.85em;
-        }
-        
-        .submit-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 40px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.2em;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
-        }
-        
-        .flash-messages {
-            margin-bottom: 20px;
-        }
-        
-        .flash {
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-        
-        .flash.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        /* Add these classes */
-        .status-ready {
-            color: #28a745;
-            font-weight: bold;
-        }
-        
-        .status-error {
-            color: #dc3545;
-            font-weight: bold;
-        }
-        
-        .flash.warning {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
-        }
-        
-        .flash.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .footer {
-            text-align: center;
-            padding: 20px;
-            background: #f8f9fa;
-            color: #6c757d;
-            font-size: 0.9em;
-        }
-        
-        @media (max-width: 600px) {
-            .header h1 {
-                font-size: 1.8em;
-            }
-            
-            .content {
-                padding: 20px;
-            }
-        }
-    </style>
+    <title>Survivor Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🚢 Survivor Detection</h1>
-            <p>Maritime Passenger Classification System</p>
-        </div>
-        
-        <div class="model-info">
-            <div>
-                <strong>Model</strong><br>
-                <span>Logistic + ExtraTrees</span>
-            </div>
-            <div>
-                <strong>Accuracy</strong><br>
-                <span>83.85% (OOF)</span>
-            </div>
-            <div>
-                <strong>Threshold</strong><br>
-                <span>0.50</span>
-            </div>
-            <div>
-                <strong>Status</strong><br>
-                <span class="{{ 'status-ready' if model_status == 'ready' else 'status-error' }}">
-                    {{ '✓ Ready' if model_status == 'ready' else '✗ Error' }}
-                </span>
-            </div>
-        </div>
-        
-        <div class="content">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    <div class="flash-messages">
-                        {% for category, message in messages %}
-                            <div class="flash {{ category }}">{{ message }}</div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            {% endwith %}
-            
-            <form action="{{ url_for('predict') }}" method="POST">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="Age">Age</label>
-                        <input type="number" id="Age" name="Age" min="0" max="120" step="0.1" placeholder="e.g., 22">
-                        <small>Passenger's age in years</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="Gender">Gender</label>
-                        <select id="Gender" name="Gender">
-                            <option value="">Select...</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="Title">Title</label>
-                        <select id="Title" name="Title">
-                            <option value="">Select...</option>
-                            <option value="Mr">Mr</option>
-                            <option value="Miss">Miss</option>
-                            <option value="Mrs">Mrs</option>
-                            <option value="Master">Master</option>
-                            <option value="Rare">Other</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="TicketTier">Ticket Tier</label>
-                        <input type="number" id="TicketTier" name="TicketTier" min="1" max="3" step="1" placeholder="1, 2, or 3">
-                        <small>Ticket class (1=First, 2=Second, 3=Third)</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="RelativesAboard">Relatives Aboard</label>
-                        <input type="number" id="RelativesAboard" name="RelativesAboard" min="0" step="1" placeholder="e.g., 1">
-                        <small>Number of relatives on board</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="ParentsChildren">Parents/Children</label>
-                        <input type="number" id="ParentsChildren" name="ParentsChildren" min="0" step="1" placeholder="e.g., 0">
-                        <small>Number of parents or children</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="TicketCost">Ticket Cost ($)</label>
-                        <input type="number" id="TicketCost" name="TicketCost" min="0" step="0.01" placeholder="e.g., 7.25">
-                        <small>Fare paid for ticket</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="BoardingPort">Boarding Port</label>
-                        <select id="BoardingPort" name="BoardingPort">
-                            <option value="">Select...</option>
-                            <option value="S">Southampton (S)</option>
-                            <option value="C">Cherbourg (C)</option>
-                            <option value="Q">Queenstown (Q)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="Berth">Berth/Cabin</label>
-                        <input type="text" id="Berth" name="Berth" placeholder="e.g., C123">
-                        <small>Cabin number (optional)</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="CLass">Class/Ticket</label>
-                        <input type="text" id="CLass" name="CLass" placeholder="e.g., A/12345">
-                        <small>Ticket class code</small>
-                    </div>
-                </div>
-                
-                <button type="submit" class="submit-btn">
-                    🔮 Predict Survival
-                </button>
-            </form>
-        </div>
-        
-        <div class="footer">
-            <p>Powered by Machine Learning | Logistic + ExtraTrees Ensemble</p>
-            <p style="margin-top: 5px;">OOF Accuracy: 83.85% | Threshold: 0.50</p>
-        </div>
+<div class="container">
+    <div class="header">
+        <h1>Survivor Detection</h1>
+        <p>Predict passenger survival using a Logistic Regression + ExtraTrees ensemble.</p>
     </div>
+
+    <div class="card">
+        <form method="POST">
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label for="PassengerId">Passenger ID</label>
+                    <input type="text" id="PassengerId" name="PassengerId" placeholder="e.g. 123">
+                </div>
+
+                <div class="form-group">
+                    <label for="PassengerName">Passenger Name</label>
+                    <input type="text" id="PassengerName" name="PassengerName" placeholder="e.g. John Smith">
+                </div>
+
+                <div class="form-group">
+                    <label for="Age">Age</label>
+                    <input type="number" step="0.1" id="Age" name="Age" placeholder="e.g. 25">
+                </div>
+
+                <div class="form-group">
+                    <label for="Gender">Gender</label>
+                    <select id="Gender" name="Gender">
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="Title">Title</label>
+                    <select id="Title" name="Title">
+                        <option value="">Select Title</option>
+                        <option value="Mr">Mr</option>
+                        <option value="Miss">Miss</option>
+                        <option value="Mrs">Mrs</option>
+                        <option value="Master">Master</option>
+                        <option value="Rare">Rare</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="TicketTier">Ticket Tier</label>
+                    <input type="number" id="TicketTier" name="TicketTier" placeholder="e.g. 1">
+                </div>
+
+                <div class="form-group">
+                    <label for="RelativesAboard">Relatives Aboard</label>
+                    <input type="number" min="0" id="RelativesAboard" name="RelativesAboard" placeholder="e.g. 1">
+                </div>
+
+                <div class="form-group">
+                    <label for="ParentsChildren">Parents / Children</label>
+                    <input type="number" min="0" id="ParentsChildren" name="ParentsChildren" placeholder="e.g. 0">
+                </div>
+
+                <div class="form-group">
+                    <label for="CLass">Ticket / Class</label>
+                    <input type="text" id="CLass" name="CLass" placeholder="e.g. A/12345">
+                </div>
+
+                <div class="form-group">
+                    <label for="Berth">Berth / Cabin</label>
+                    <input type="text" id="Berth" name="Berth" placeholder="e.g. C23">
+                </div>
+
+                <div class="form-group">
+                    <label for="TicketCost">Ticket Cost</label>
+                    <input type="number" step="0.01" min="0" id="TicketCost" name="TicketCost" placeholder="e.g. 75.50">
+                </div>
+
+                <div class="form-group">
+                    <label for="BoardingPort">Boarding Port</label>
+                    <input type="text" id="BoardingPort" name="BoardingPort" placeholder="e.g. S">
+                </div>
+
+            </div>
+
+            <button type="submit">Predict Survival</button>
+        </form>
+
+        {% if error %}
+        <div class="error">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        {% if result %}
+        <div class="result">
+
+            {% if result.prediction == 1 %}
+            <div class="prediction survived">
+                <div class="prediction-icon">✓</div>
+                <div>
+                    <h2>Likely Survived</h2>
+                    <p>Predicted Outcome: 1</p>
+                </div>
+            </div>
+            {% else %}
+            <div class="prediction not-survived">
+                <div class="prediction-icon">✕</div>
+                <div>
+                    <h2>Likely Did Not Survive</h2>
+                    <p>Predicted Outcome: 0</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="probability">
+                <h3>Final Survival Probability</h3>
+                <div class="probability-value">{{ result.probability_percent }}%</div>
+                <div class="progress-bar">
+                    <div class="progress" style="width: {{ result.probability_percent }}%;"></div>
+                </div>
+            </div>
+
+            <div class="model-results">
+                <div class="model-box">
+                    <span>Logistic Regression</span>
+                    <strong>{{ result.logistic_percent }}%</strong>
+                </div>
+                <div class="model-box">
+                    <span>ExtraTrees</span>
+                    <strong>{{ result.extra_trees_percent }}%</strong>
+                </div>
+            </div>
+
+            <div class="model-info">
+                <p><strong>Ensemble:</strong> Logistic Regression (60%) + ExtraTrees (40%)</p>
+                <p><strong>Decision Threshold:</strong> 0.50</p>
+            </div>
+
+        </div>
+        {% endif %}
+    </div>
+
+    <footer>Survivor Detection ML Project</footer>
+</div>
 </body>
 </html>
